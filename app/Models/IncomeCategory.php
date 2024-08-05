@@ -9,9 +9,14 @@ class IncomeCategory extends Model
 {
     use HasFactory;
 
-        // Relationship to Income
-        public function expenses()
-        {
-            return $this->hasMany(Income::class, 'category_id');
-        }
+      /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'category_name',
+        'is_visible',
+    ];
+
 }

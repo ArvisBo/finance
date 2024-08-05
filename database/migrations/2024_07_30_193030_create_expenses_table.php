@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('expenses', function (Blueprint $table) {
-            $table->id();
+            $table->id()->autoIncrement();
             $table->foreignId('created_user_id')->constrained('users');
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('category_id')->constrained('expense_categories');
-            $table->string('pruduct_name',150)->unique();
-            $table->date('date');
+            $table->string('product_name',150);
+            $table->date('date')->nullable();
             $table->integer('count')->default(1);
-            $table->decimal('price', 10, 2);
-            $table->decimal('total_price', 10, 2);
+            $table->decimal('price', 10, 2)->nullable();
+            $table->decimal('total_price', 10, 2)->nullable();
             $table->string('receipt_image')->nullable();
             $table->text('additional_information')->nullable();
             $table->date('warranty_until')->nullable();

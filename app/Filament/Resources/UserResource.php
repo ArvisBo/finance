@@ -6,9 +6,12 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\CheckboxColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,13 +21,32 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static ?string $navigationGroup = 'System Management';
+    //izmanto lai veidotu secību navigationBroup esošajiem resursiem pagaidām neizmantoju
+    // protected static ?int $navigationSord = 1;
+
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                //
+                TextInput::make('name')
+                ->label('Name')
+                ->required(),
+                TextInput::make('surname')
+                ->label('Surname')
+                ->required(),
+                TextInput::make('email')
+                ->label('Email')
+                ->email()
+                ->required(),
+                TextInput::make('password')
+                ->label('Password')
+                ->password()
+                ->required(),
+                Checkbox::make('is_admin')
+                -> label('Is Admin')
             ]);
     }
 
@@ -33,7 +55,10 @@ class UserResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name'),
+                TextColumn::make('surname'),
                 TextColumn::make('email'),
+                CheckboxColumn::make('is_admin')
+                ->disabled(),
                 TextColumn::make('created_at')->date(),
                 //
             ])

@@ -8,6 +8,7 @@ use App\Models\Income;
 use App\Models\IncomeCategory;
 use App\Models\User;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -18,33 +19,37 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class IncomeResource extends Resource
 {
     protected static ?string $model = Income::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-inbox-arrow-down';
+    protected static ?string $navigationLabel = 'Incomes';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Hidden::make('created_user_id')
-                ->default(fn () => auth()->id()),
+                    ->default(fn () => auth()->id()),
                 Select::make('user_id')
                     ->default(fn () => auth()->id())
                     ->label('Author')
                     ->options(User::all()->pluck('name', 'id'))
-                    ->searchable(),
+                    ->searchable()
+                    ->native(false),
                 Select::make('category_id')
                     ->label('Category')
                     ->options(IncomeCategory::all()->pluck('category_name', 'id'))
-                    ->searchable(),
-                TextInput::make('date'),
+                    ->searchable()
+                    ->native(false),
+                DatePicker::make('date')
+                    ->format('Y-m-d'),
                 TextInput::make('amount')
-                ->numeric()
-                ->inputMode('decimal'),
-
+                    ->numeric()
+                    ->inputMode('decimal'),
                 TextInput::make('additional_information'),
             ]);
     }
@@ -53,9 +58,12 @@ class IncomeResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('user.name')->label('User name'),
-                TextColumn::make('incomecategory.category_name')->label('Category Name'),
-                TextColumn::make('date')->date(),
+                TextColumn::make('user.name')
+                    ->label('User name'),
+                TextColumn::make('incomecategory.category_name')
+                    ->label('Category Name'),
+                TextColumn::make('date')
+                    ->date('Y-m-d'),
                 TextColumn::make('amount'),
                 TextColumn::make('additional_information'),
             ])
@@ -78,6 +86,13 @@ class IncomeResource extends Resource
         return [
             //
         ];
+    }
+
+    // nodrošina, ka virs tabulas rādās lietotāja, kas ir ielogojies vārds
+    public static function getLabel(): string
+    {
+        $user = Auth::user();
+        return 'Incomes for ' . ($user ? $user->name : 'Guest');
     }
 
     public static function getPages(): array

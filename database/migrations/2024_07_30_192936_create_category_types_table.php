@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('category_types', function (Blueprint $table) {
-            $table->id();
+            $table->id()->autoIncrement();
             $table->foreignId('created_user_id')->constrained('users');
             $table->foreignId('user_id')->constrained('users');
             $table->string('category_type_name',150)->unique();

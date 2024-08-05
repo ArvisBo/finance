@@ -13,9 +13,8 @@ return new class extends Migration
     //create expense_category_table
     {
         Schema::create('expense_categories', function (Blueprint $table) {
-            $table->id();
+            $table->id()->autoIncrement();
             $table->string('category_name', 100)->unique();
-            $table->foreignId('category_type_id')->constrained('category_types');
             $table->boolean('is_visible')->default(true);
             $table->timestamps();
         });

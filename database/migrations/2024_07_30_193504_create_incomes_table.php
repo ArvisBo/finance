@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('incomes', function (Blueprint $table) {
-            $table->id();
+            $table->id()->autoIncrement();
             $table->foreignId('created_user_id')->constrained('users');
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('category_id')->constrained('income_categories');

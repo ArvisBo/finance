@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('income_categories', function (Blueprint $table) {
-            $table->id();
+            $table->id()->autoIncrement();
             $table->string('category_name', 100)->unique();
             $table->boolean('is_visible')->default(true);
             $table->timestamps();
