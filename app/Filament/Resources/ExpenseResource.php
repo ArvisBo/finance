@@ -8,10 +8,12 @@ use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\User;
 use Carbon\Carbon;
+use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -48,11 +50,19 @@ class ExpenseResource extends Resource
                     ->native(false),
                 Select::make('category_id')
                     ->label('Category')
-                    ->options(ExpenseCategory::all()->pluck('category_name', 'id'))
+                    // ->options(ExpenseCategory::where('is_visible', true)->pluck('category_name', 'id'))
+                    ->options(function () {
+                        return ExpenseCategory::visible()->get()->mapWithKeys(function ($category) {
+                            return [
+                                $category->id => $category->is_visible ? $category->category_name : 'Category Disabled'
+                            ];
+                        });
+                    })
                     ->searchable()
                     ->native(false),
                 TextInput::make('product_name'),
                 DatePicker::make('date')
+                    ->label('Purchase date')
                     ->format('Y-m-d'),
                     // šis ir gadījumiem, ja vajag automātiski aizpildīt warranty_until pieplusojot 2gadus automātiski
                     // ->reactive()
@@ -60,7 +70,8 @@ class ExpenseResource extends Resource
                     //     $newDate = Carbon::parse($state)->addYears(2)->format('Y-m-d');
                     //     $set('warranty_until', $newDate);
                     // }),
-                TextInput::make('count')
+                Section::make('Price')->schema([
+                    TextInput::make('count')
                     ->label('Count')
                     ->default(1)
                     ->required()
@@ -83,31 +94,45 @@ class ExpenseResource extends Resource
                     }),
 
                 TextInput::make('total_price')
-                ->label('Total price')
-                ->numeric()
-                // ->required()
-                ->disabled(), // Disable the field to prevent manual changes
+                    ->label('Total price')
+                    ->numeric()
+                    // ->required()
+                    ->disabled()
+                    ->dehydrated()
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                        $count = $get('count');
+                        $price = $get('price');
+                        $set('total_price', $count * $price);
+                    }),
 
-                Hidden::make('total_price')
-                ->default(0)
-                ->reactive()
-                ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                    $count = $get('count');
-                    $price = $get('price');
-                    $set('total_price', $count * $price);
-                }),
+                    // vecais kods, lai saglabātu total_prices datubāzē
+                // Hidden::make('total_price')
+                //     ->default(0)
+                //     ->reactive()
+                //     ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                //         $count = $get('count');
+                //         $price = $get('price');
+                //         $set('total_price', $count * $price);
+                //     }),
+                ])->columns(3),
 
-                FileUpload::make('receipt_image'),
+
+                FileUpload::make('receipt_image')
+                    ->disk('public')->directory('receipts') //vieta kur tiek glabāti pievienotie faili storage/app/public/receipts
+                    ->visibility('public'),
                 TextInput::make('additional_information'),
                 DatePicker::make('warranty_until')
                     ->format('Y-m-d'),
 
-            ]);
+            ])
+            ->model(Expense::where('user_id', auth()->id())->firstOrFail());
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->query(Expense::visible()) // nodrošina, ka tiek rādīti tikai ielogotā lietotāja ieraksti
             ->columns([
                 TextColumn::make('user.name')
                     ->label('User name')
@@ -120,18 +145,23 @@ class ExpenseResource extends Resource
                 TextColumn::make('date')->date('Y-m-d')
                     ->sortable(),
                 TextColumn::make('count')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('price')
                     ->sortable(),
                 TextColumn::make('total_price')
                 ->label('Total price')
                     ->sortable(),
                 ImageColumn::make('receipt_image')
-                    ->sortable(),
+                    ->label('Receipt Image')
+                    ->disk('public')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('additional_information')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('warranty_until')->date('Y-m-d')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
@@ -139,6 +169,7 @@ class ExpenseResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

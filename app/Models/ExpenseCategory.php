@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ExpenseCategory extends Model
 {
-    use HasFactory;
+    // use HasFactory;
+    use SoftDeletes;
 
       /**
      * The attributes that are mass assignable.
@@ -19,11 +22,8 @@ class ExpenseCategory extends Model
         'category_type_id',
         'is_visible',
     ];
-
-    // Relationship to Expenses
-    public function expenses()
-    {
-        return $this->hasMany(Expense::class, 'category_id');
+    public function scopeVisible (Builder $query) {
+        $query->where('is_visible', 1);
     }
 
 }

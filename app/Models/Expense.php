@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -27,6 +28,14 @@ class Expense extends Model
         'additional_information',
         'warranty_until',
     ];
+    // atlasa visus ielogotā lietotāja ierakstus.
+    public function scopeVisible (Builder $query) {
+        $query->where('user_id', auth()->id());
+    }
+    // izveidots gadījumam, ja expense formā tiks pievienots ievadlaugs "tags input"
+    // protected $casts = [
+    //     'tags' => 'array',
+    // ];
 
     // Define the relationship to User model
     public function user()

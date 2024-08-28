@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -18,5 +19,7 @@ class IncomeCategory extends Model
         'category_name',
         'is_visible',
     ];
-
+    public function scopeVisible (Builder $query) {
+        $query->where('is_visible', 1);
+    }
 }

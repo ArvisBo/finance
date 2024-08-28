@@ -42,21 +42,26 @@ class IncomeResource extends Resource
                     ->native(false),
                 Select::make('category_id')
                     ->label('Category')
+                    ->required()
                     ->options(IncomeCategory::all()->pluck('category_name', 'id'))
                     ->searchable()
                     ->native(false),
                 DatePicker::make('date')
+                    ->required()
                     ->format('Y-m-d'),
                 TextInput::make('amount')
+                    ->required()
                     ->numeric()
                     ->inputMode('decimal'),
                 TextInput::make('additional_information'),
-            ]);
+            ])
+            ->model(Income::where('user_id', auth()->id())->firstOrFail());
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->query(Income::visible()) // nodrošina, ka tiek rādīti tikai ielogotā lietotāja ieraksti
             ->columns([
                 TextColumn::make('user.name')
                     ->label('User name'),

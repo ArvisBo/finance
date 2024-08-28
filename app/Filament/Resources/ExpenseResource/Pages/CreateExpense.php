@@ -16,4 +16,10 @@ class CreateExpense extends CreateRecord
 
             return $data;
         }
+    // nodrošin, ka pēc jauna ieraksta saglabāšanas tiktu atvērta lapa ar visiem izdevumu ierakstiem
+    protected function getRedirectUrl(): string
+        {
+            // Return the URL you want to redirect to after the record is created
+            return $this->getResource()::getUrl('index'); // Redirects to the index page of the resource
+        }
 }

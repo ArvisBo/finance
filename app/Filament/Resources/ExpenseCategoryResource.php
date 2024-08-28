@@ -3,9 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ExpenseCategoryResource\Pages;
-use App\Filament\Resources\ExpenseCategoryResource\RelationManagers;
 use App\Models\ExpenseCategory;
-use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
@@ -14,8 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Validation\Rule;
 
 class ExpenseCategoryResource extends Resource
 {
@@ -31,15 +28,27 @@ class ExpenseCategoryResource extends Resource
         return $form
             ->schema([
                 TextInput::make('category_name')
+                    ->label('Category Name')
+                    ->placeholder('Enter a unique category name')
                     ->required()
                     ->maxLength(100)
-                    ->unique(),
+                    // šajā versijā rule metode atgriež kļūdas paziņojumu "addslashes(): Argument #1 ($string) must be of type string, Closure given"
+                    // ->rules([
+                    //     Rule::unique('expense_categories', 'category_name')
+                    //         ->ignore(fn ($record) => $record('id')),
+                    // ]),
+
+                    // šajā versijā rule metode neļauj editot citus ievadlaukus jo atgriež paziņojumu, ka ievadlauks category name jau eksistē"
+                    ->rules([
+                        Rule::unique('expense_categories', 'category_name')
+                            ->ignore(request()->route('record')), // Correctly pass the record ID
+                    ]),
+
                 Toggle::make('is_visible')
                     ->required()
-                    ->default(true),
+                    ->default(1),
             ]);
     }
-
     public static function table(Table $table): Table
     {
         return $table
