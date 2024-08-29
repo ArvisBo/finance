@@ -14,11 +14,15 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+		    $table->string('surname');
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+		    $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->foreignId('default_account_id')->nullable()->constrained('accounts')->onDelete('set null');
+            $table->boolean('is_admin')->default(false);
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes(); // Soft delete column
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
