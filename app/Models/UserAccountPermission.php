@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Expense_category extends Model
+class UserAccountPermission extends Model
 {
     use HasFactory;
 }

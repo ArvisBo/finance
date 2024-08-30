@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('expense_categories', function (Blueprint $table) {
+        Schema::create('ExpenseCategories', function (Blueprint $table) {
             $table->id();
 		    $table->foreignId('created_user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('expense_category_name');

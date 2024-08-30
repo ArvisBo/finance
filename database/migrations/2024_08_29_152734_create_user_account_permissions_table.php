@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('user_account_permissions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('set null');
-            $table->foreignId('account_id')->constrained('accounts')->onDelete('set null');
-            $table->foreignId('permission_id')->constrained('permissions')->onDelete('set null');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('account_id')->nullable()->constrained('accounts')->onDelete('set null');
+            $table->foreignId('permission_id')->nullable()->constrained('permissions')->onDelete('set null');
             $table->timestamps();
         });
     }

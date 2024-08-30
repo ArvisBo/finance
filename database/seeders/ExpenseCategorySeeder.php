@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Expense_category;
+use App\Models\ExpenseCategory;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -10,33 +10,33 @@ class ExpenseCategorySeeder extends Seeder
 {
     public function run()
     {
-        Expense_category::create([
+        ExpenseCategory::create([
             'created_user_id' => 1,
-            'expense_category_name' => 'Electronics',
+            'ExpenseCategory_name' => 'Electronics',
             'is_visible' => true,
         ]);
 
-        Expense_category::create([
+        ExpenseCategory::create([
             'created_user_id' => 2,
-            'expense_category_name' => 'Office Expenses',
+            'ExpenseCategory_name' => 'Office Expenses',
             'is_visible' => true,
         ]);
 
-        Expense_category::create([
+        ExpenseCategory::create([
             'created_user_id' => 1,
-            'expense_category_name' => 'Food',
+            'ExpenseCategory_name' => 'Food',
             'is_visible' => true,
         ]);
 
-        Expense_category::create([
+        ExpenseCategory::create([
             'created_user_id' => 1,
-            'expense_category_name' => 'Car',
+            'ExpenseCategory_name' => 'Car',
             'is_visible' => true,
         ]);
 
-        Expense_category::create([
+        ExpenseCategory::create([
             'created_user_id' => 1,
-            'expense_category_name' => 'House',
+            'ExpenseCategory_name' => 'House',
             'is_visible' => true,
         ]);
     }

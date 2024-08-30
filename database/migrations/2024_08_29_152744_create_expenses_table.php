@@ -18,7 +18,7 @@ return new class extends Migration
 			$table->date('expense_date')->nullable();
             $table->foreignId('expense_category_id')->nullable()->constrained('expense_categories')->onDelete('set null');
 			$table->foreignId('account_id')->nullable()->constrained('accounts')->onDelete('set null');
-			$table->intiger('count');
+			$table->integer('count');
             $table->decimal('unit_price', 10, 2);
 			$table->decimal('total_price', 10, 2);
 			$table->string('file')->nullable();

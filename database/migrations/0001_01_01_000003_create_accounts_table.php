@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('accounts', function (Blueprint $table) {
             $table->id()->autoIncrement();
             $table->string('name');
-		    $table->foreignId('created_user_id')->constrained('users')->onDelete('set null');
-            $table->foreignId('account_owner_id')->constrained('users')->onDelete('set null');
+            $table->string('account_number');
+		    $table->foreignId('created_user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('account_owner_id')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
         });

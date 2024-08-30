@@ -17,10 +17,11 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             UserAccountRoleSeeder::class,
             UserAccountPermissionSeeder::class,
-            IncomeSeeder::class,
-            ExpenseSeeder::class,
             ExpenseCategorySeeder::class,
             IncomeCategorySeeder::class,
+            IncomeSeeder::class,
+            ExpenseSeeder::class,
+
         ]);
     }
 }

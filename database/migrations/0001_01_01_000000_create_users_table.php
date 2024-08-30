@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('email')->unique();
 		    $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->foreignId('default_account_id')->nullable()->constrained('accounts')->onDelete('set null');
+            // $table->foreignId('default_account_id')->nullable()->constrained('accounts')->onDelete('set null');
             $table->boolean('is_admin')->default(false);
             $table->rememberToken();
             $table->timestamps();
