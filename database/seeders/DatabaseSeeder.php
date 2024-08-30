@@ -8,16 +8,20 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
-    public function run(): void
+    public function run()
     {
-        // User::factory(10)->create();
+        $this->call([
+            UserSeeder::class,
+            AccountSeeder::class,
+            RoleSeeder::class,
+            PermissionSeeder::class,
+            UserAccountRoleSeeder::class,
+            UserAccountPermissionSeeder::class,
+            ExpenseCategorySeeder::class,
+            IncomeCategorySeeder::class,
+            IncomeSeeder::class,
+            ExpenseSeeder::class,
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
         ]);
     }
 }
