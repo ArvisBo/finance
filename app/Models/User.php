@@ -19,8 +19,11 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'surname',
         'email',
         'password',
+        'is_admin',
+        'default_account_id'
     ];
 
     /**
@@ -45,4 +48,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    // A user can have a default account
+    public function defaultAccount()
+    {
+        return $this->belongsTo(Account::class, 'default_account_id');
+    }
+
 }

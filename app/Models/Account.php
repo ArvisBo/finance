@@ -9,4 +9,30 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Account extends Model
 {
     use HasFactory, SoftDeletes;
+
+        /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'created_user_id',
+        'account_owner_id',
+        'name',
+        'account_number',
+
+    ];
+
+        // Define the relationship to User model
+        public function accountOwner()
+        {
+            return $this->belongsTo(User::class, 'account_owner_id');
+        }
+
+        // Define the relationship to User model
+        public function accountCreator()
+        {
+            return $this->belongsTo(User::class, 'created_user_id');
+        }
+
 }
