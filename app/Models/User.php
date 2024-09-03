@@ -48,6 +48,7 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
     // A user can have a default account
     public function defaultAccount()
     {
