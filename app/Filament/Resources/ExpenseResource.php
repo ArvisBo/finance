@@ -3,15 +3,21 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ExpenseResource\Pages;
-use App\Filament\Resources\ExpenseResource\RelationManagers;
+use App\Models\Account;
 use App\Models\Expense;
-use Filament\Forms;
+use App\Models\ExpenseCategory;
+use App\Models\User;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Storage;
 
 class ExpenseResource extends Resource
 {
@@ -23,36 +29,84 @@ class ExpenseResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('created_user_id')
-                    ->numeric(),
-                Forms\Components\TextInput::make('expense_name')
+                Select::make('created_user_id')
+                    ->default(fn () => auth()->id())
+                    ->disabled()
+                    ->dehydrated()
+                    ->options(User::all()->mapWithKeys(function ($user) {
+                        return [$user->id => $user->name . ' ' . $user->surname];
+                    })),
+                Select::make('account_id')
+                    ->options(Account::selectRaw("CONCAT(name, ' ', account_number) as account_info, id")
+                        ->pluck('account_info', 'id'))
+                    ->searchable()
+                    ->required(),
+                Select::make('expense_category_id')
+                    ->relationship('expenseCategory', 'name')
+                    ->required()
+                    ->searchable()
+                    ->label('Expense category')
+                    ->placeholder('Select an expense Category')
+                    ->options(ExpenseCategory::visible()->pluck('expense_category_name', 'id')),
+                TextInput::make('expense_name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\DatePicker::make('expense_date'),
-                Forms\Components\TextInput::make('expense_category_id')
-                    ->numeric(),
-                Forms\Components\TextInput::make('account_id')
-                    ->numeric(),
-                Forms\Components\TextInput::make('count')
+                DatePicker::make('expense_date')
+                    ->default(now())
+                    ->label('Purchase date')
+                    ->format('Y-m-d'),
+                TextInput::make('count')
+                    ->label('Count')
+                    ->default(1)
                     ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('unit_price')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('total_price')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('file')
-                    ->maxLength(255),
-                Forms\Components\Textarea::make('additional_information')
+                    ->integer()
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                        $price = $get('unit_price');
+                        $set('total_price', $state * $price);
+                    }),
+                TextInput::make('unit_price')
+                ->label('Unit price')
+                ->minValue(0)
+                ->rule('regex:/^\d+([,.]\d{1,2})?$/') // Atļauj ievadīt "." un  ","
+                ->required()
+                ->reactive()
+                ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                    // Ja lietotājs ievada "," tas tiks nomainīts uz "."
+                    $formattedPrice = str_replace(',', '.', $state);
+
+                    // nomaina uz updated formātu
+                    $set('unit_price', $formattedPrice);
+
+                    // aprēķina un uzstāda total_price vērtību
+                    $count = $get('count');
+                    $set('total_price', $count * $formattedPrice);
+                }),
+                TextInput::make('total_price')
+                    ->label('Total price')
+                    ->numeric()
+                    ->step(0.01)
+                    ->disabled()
+                    ->dehydrated(),
+                FileUpload::make('file')
+                    ->disk('public')->directory('files') //vieta kur tiek glabāti pievienotie faili storage/app/public/receipts
+                    ->visibility('public')
+                    ->downloadable()
+                    ->deleteUploadedFileUsing(function ($file) {
+                        // Dzēš veco failu, ja tiek augšupielādēs vai izdzēsts formā esošais fails
+                        Storage::disk('public')->delete($file);
+                    }),
+                Textarea::make('additional_information')
                     ->columnSpanFull(),
-                Forms\Components\DatePicker::make('warranty_until'),
+                DatePicker::make('warranty_until')
+                    ->format('Y-m-d'),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+        ->query(Expense::visible()) // nodrošina, ka tiek rādīti tikai ielogotā lietotāja ieraksti expense modelī methode scopeVisible
             ->columns([
                 Tables\Columns\TextColumn::make('created_user_id')
                     ->numeric()
@@ -77,7 +131,7 @@ class ExpenseResource extends Resource
                 Tables\Columns\TextColumn::make('total_price')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('file')
+                ImageColumn::make('file')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('warranty_until')
                     ->date()
