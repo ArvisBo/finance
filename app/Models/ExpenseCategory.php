@@ -21,4 +21,8 @@ class ExpenseCategory extends Model
         $query->where('is_visible', 1);
     }
 
+    public function expenseCategoryCreator()
+    {
+        return $this->belongsTo(User::class, 'created_user_id');
+    }
 }
