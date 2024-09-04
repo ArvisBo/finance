@@ -5,10 +5,17 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\IncomeCategoryResource\Pages;
 use App\Filament\Resources\IncomeCategoryResource\RelationManagers;
 use App\Models\IncomeCategory;
+use App\Models\User;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -23,13 +30,19 @@ class IncomeCategoryResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('created_user_id')
-                    ->numeric(),
-                Forms\Components\TextInput::make('income_category_name')
+                Select::make('created_user_id')
+                    ->default(fn () => auth()->id())
+                    ->disabled()
+                    ->dehydrated()
+                    ->options(User::all()->mapWithKeys(function ($user) {
+                        return [$user->id => $user->name . ' ' . $user->surname];
+                    })),
+                TextInput::make('income_category_name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Toggle::make('is_visible')
-                    ->required(),
+                Toggle::make('is_visible')
+                    ->required()
+                    ->default(1),
             ]);
     }
 
@@ -37,23 +50,25 @@ class IncomeCategoryResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('created_user_id')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('income_category_name')
+                TextColumn::make('incomeCategoryCreator.name')
+                ->label('Name')
+                ->formatStateUsing(function ($record) {
+                    return $record->incomeCategoryCreator->name . ' ' . $record->incomeCategoryCreator->surname;
+                }),
+                TextColumn::make('income_category_name')
                     ->searchable(),
-                Tables\Columns\IconColumn::make('is_visible')
+                IconColumn::make('is_visible')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                TextColumn::make('created_at')
+                    ->dateTime('Y-m-d H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                TextColumn::make('updated_at')
+                    ->dateTime('Y-m-d H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
-                    ->dateTime()
+                TextColumn::make('deleted_at')
+                    ->dateTime('Y-m-d H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -63,7 +78,8 @@ class IncomeCategoryResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-            ])
+            ], position: ActionsPosition::BeforeColumns)
+
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
