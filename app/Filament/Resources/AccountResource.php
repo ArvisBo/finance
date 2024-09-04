@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\AccountResource\Pages;
 use Filament\Forms\Form;
+use Filament\Tables\Columns\TextColumn;
 
 class AccountResource extends Resource
 {
@@ -26,19 +27,19 @@ class AccountResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('accountOwner.name')
+                TextColumn::make('accountOwner.name')
                     ->label('Account owner')
                     ->formatStateUsing(function ($record) {
                         return $record->accountOwner->name . ' ' . $record->accountOwner->surname;
                     })
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Account name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('account_number')
+                TextColumn::make('account_number')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('accountCreator.name')
+                TextColumn::make('accountCreator.name')
                 ->label('Account creator')
                 ->formatStateUsing(function ($record) {
                     return $record->accountCreator->name . ' ' . $record->accountCreator->surname;
@@ -46,15 +47,15 @@ class AccountResource extends Resource
                 ->sortable()
                 ->searchable()
                 ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

@@ -7,6 +7,7 @@ use App\Models\Account;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\User;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -16,6 +17,8 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
 
@@ -108,40 +111,52 @@ class ExpenseResource extends Resource
         return $table
         ->query(Expense::visible()) // nodrošina, ka tiek rādīti tikai ielogotā lietotāja ieraksti expense modelī methode scopeVisible
             ->columns([
-                Tables\Columns\TextColumn::make('created_user_id')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('expense_name')
+                TextColumn::make('expenseCreator.name')
+                ->label('Name')
+                ->formatStateUsing(function ($record) {
+                    return $record->expenseCreator->name . ' ' . $record->expenseCreator->surname;
+                })
+                    ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('expense_date')
-                    ->date()
+                TextColumn::make('expense_name')
+                    ->searchable(),
+                TextColumn::make('expense_date')
+                    ->date('Y-m-d')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('expense_category_id')
+                TextColumn::make('expenseCategory.expense_category_name')
+                    ->label('Category')
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('expenseAccount.name')
+                    ->label('Account name')
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('expenseAccount.account_number')
+                    ->label('Account number')
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('count')
                     ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('account_id')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('count')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('unit_price')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('total_price')
-                    ->numeric()
+                    ->sortable()
+                    ->Toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('unit_price')
+                    ->money('EUR', locale: 'lv')
+                    ->sortable()
+                    ->Toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('total_price')
+                    ->money('EUR', locale: 'lv')
                     ->sortable(),
                 ImageColumn::make('file')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('warranty_until')
-                    ->date()
+                    ->Toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('warranty_until')
+                    ->date('Y-m-d')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                TextColumn::make('created_at')
+                    ->dateTime('Y-m-d H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                TextColumn::make('updated_at')
+                    ->dateTime('Y-m-d H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -150,8 +165,11 @@ class ExpenseResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-            ])
+                // Tables\Actions\EditAction::make(),
+            ], position: ActionsPosition::BeforeColumns)
+
+            ->defaultSort('expense_date', 'desc')
+
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
