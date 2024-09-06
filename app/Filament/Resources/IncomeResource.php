@@ -47,7 +47,9 @@ class IncomeResource extends Resource
                     ->options(IncomeCategory::visible()->pluck('income_category_name', 'id')),
                 Select::make('account_id')
                     ->options(Account::selectRaw("CONCAT(name, ' ', account_number) as account_info, id")
-                        ->pluck('account_info', 'id'))
+                        ->where('account_owner_id', auth()->id())
+                        ->pluck('account_info', 'id')
+                        )
                     ->searchable()
                     ->required(),
                 DatePicker::make('income_date')

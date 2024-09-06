@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -22,6 +23,11 @@ class Account extends Model
         'account_number',
 
     ];
+
+    // atlasa visus ielogotā lietotāja ierakstus.
+    public function scopeVisible (Builder $query) {
+        $query->where('account_owner_id', auth()->id());
+    }
 
         // Define the relationship to User model
         public function accountOwner()

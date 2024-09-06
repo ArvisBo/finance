@@ -26,6 +26,7 @@ class AccountResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+        ->query(Account::visible()) // nodrošina, ka tiek rādīti tikai ielogotā lietotāja ieraksti expense modelī methode scopeVisible
             ->columns([
                 TextColumn::make('accountOwner.name')
                     ->label('Account owner')
