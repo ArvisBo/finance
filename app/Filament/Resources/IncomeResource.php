@@ -10,16 +10,21 @@ use App\Models\IncomeCategory;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+
 
 class IncomeResource extends Resource
 {
@@ -104,7 +109,10 @@ class IncomeResource extends Resource
                     ->sortable(),
                 TextColumn::make('amount')
                     ->money('EUR', locale: 'lv')
-                    ->sortable(),
+                    ->sortable()
+                    ->summarize(Sum::make()
+                        ->money('EUR', locale: 'lv')
+                        ->label('Total incomes')),
                 TextColumn::make('created_at')
                     ->dateTime('Y-m-d H:i:s')
                     ->sortable()
@@ -115,8 +123,46 @@ class IncomeResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
-            ])
+                SelectFilter::make('category_id')
+                    ->label('Category')
+                    ->relationship('incomeCategory', 'income_category_name'),
+                SelectFilter::make('account_id')
+                    ->label('Account')
+                    ->default(fn () => optional(auth()->user())->default_account_id) // šo varbūt nevajag, jāskatās kā būs lietojot
+                    ->relationship('incomeAccount', 'name', fn(Builder $query)=>$query->where('account_owner_id', auth()->id())),
+
+                Filter::make('expense_date')
+                    ->label('Date Range')
+                    ->columnSpan(2)
+                    ->form([
+                        Grid::make(2)
+                            ->schema([
+                                DatePicker::make('incomes_from')
+                                    ->default(now()->startOfMonth())
+                                    ->label('From')
+                                    ->columnSpan(1),
+                                DatePicker::make('incomes_until')
+                                    ->default(now()->endOfMonth())
+                                    ->label('Until')
+                                    ->columnSpan(1),
+                            ]),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['incomes_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['incomes_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+
+            ], FiltersLayout::AboveContent) // filtri vienmēr atvērti
+            // ], FiltersLayout::Modal) //filtri tiks atvērti kā modal logs
+            // ], FiltersLayout::AboveContentCollapsible) // filtrus būs iespējams minimizēt
+
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 // Tables\Actions\EditAction::make(),

@@ -10,6 +10,7 @@ use App\Models\User;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -21,6 +22,12 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
+use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
+
 
 class ExpenseResource extends Resource
 {
@@ -111,7 +118,7 @@ class ExpenseResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-        ->query(Expense::visible()) // nodrošina, ka tiek rādīti tikai ielogotā lietotāja ieraksti expense modelī methode scopeVisible
+            ->query(Expense::visible()) // nodrošina, ka tiek rādīti tikai ielogotā lietotāja ieraksti expense modelī methode scopeVisible
             ->columns([
                 TextColumn::make('expenseCreator.name')
                 ->label('Name')
@@ -120,15 +127,16 @@ class ExpenseResource extends Resource
                 })
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('expense_name')
-                    ->searchable(),
-                TextColumn::make('expense_date')
-                    ->date('Y-m-d')
-                    ->sortable(),
                 TextColumn::make('expenseCategory.expense_category_name')
                     ->label('Category')
                     ->sortable()
                     ->searchable(),
+                TextColumn::make('expense_name')
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('expense_date')
+                    ->date('Y-m-d')
+                    ->sortable(),
                 TextColumn::make('expenseAccount.name')
                     ->label('Account name')
                     ->sortable()
@@ -147,12 +155,16 @@ class ExpenseResource extends Resource
                     ->Toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('total_price')
                     ->money('EUR', locale: 'lv')
-                    ->sortable(),
+                    ->sortable()
+                    ->summarize(Sum::make()
+                        ->money('EUR', locale: 'lv')
+                        ->label('Total expenses')),
                 ImageColumn::make('file')
                     ->Toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('warranty_until')
                     ->date('Y-m-d')
-                    ->sortable(),
+                    ->sortable()
+                    ->Toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime('Y-m-d H:i:s')
                     ->sortable()
@@ -162,9 +174,48 @@ class ExpenseResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+
             ->filters([
-                //
-            ])
+                SelectFilter::make('category_id')
+                    ->label('Category')
+                    ->relationship('expenseCategory', 'expense_category_name'),
+                SelectFilter::make('account_id')
+                    ->label('Account')
+                    ->default(fn () => optional(auth()->user())->default_account_id) // Set default account ID
+                    ->relationship('expenseAccount', 'name', fn(Builder $query) => $query->where('account_owner_id', auth()->id())),
+
+                Filter::make('expense_date')
+                    ->label('Date Range')
+                    ->columnSpan(2)
+                    ->form([
+                        Grid::make(2)
+                            ->schema([
+                                DatePicker::make('expenses_from')
+                                    ->default(now()->startOfMonth())
+                                    ->label('From')
+                                    ->columnSpan(1),
+                                DatePicker::make('expenses_until')
+                                    ->default(now()->endOfMonth())
+                                    ->label('Until')
+                                    ->columnSpan(1),
+                            ]),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['expenses_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['expenses_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+
+            ],FiltersLayout::AboveContent)
+            // FiltersLayout::Modal)
+            // FiltersLayout::AboveContentCollapsible)
+
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 // Tables\Actions\EditAction::make(),
