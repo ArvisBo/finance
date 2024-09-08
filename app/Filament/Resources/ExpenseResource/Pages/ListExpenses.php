@@ -22,7 +22,7 @@ class ListExpenses extends ListRecords
     {
         return [
             'This Month' => Tab::make()
-            ->modifyQueryUsing(fn(Builder $query) => $query->where('expense_date', '>=', now()->subMonth())),
+            ->modifyQueryUsing(fn(Builder $query) => $query->where('expense_date', '>=', now()->startOfMonth())),
             'Six Month' => Tab::make()
                 ->modifyQueryUsing(fn(Builder $query) => $query->where('expense_date', '>=', now()->subMonth(6))),
             'Year' => Tab::make()

@@ -138,12 +138,18 @@ class IncomeResource extends Resource
                         Grid::make(2)
                             ->schema([
                                 DatePicker::make('incomes_from')
-                                    ->default(now()->startOfMonth())
+                                    ->native(false)
                                     ->label('From')
+                                    ->placeholder('YYYY-MM-DD')
+                                    ->displayFormat('Y-m-d')
+                                    ->firstDayOfWeek(1)
                                     ->columnSpan(1),
                                 DatePicker::make('incomes_until')
-                                    ->default(now()->endOfMonth())
+                                    ->native(false)
                                     ->label('Until')
+                                    ->placeholder('YYYY-MM-DD')
+                                    ->displayFormat('Y-m-d')
+                                    ->firstDayOfWeek(1)
                                     ->columnSpan(1),
                             ]),
                     ])

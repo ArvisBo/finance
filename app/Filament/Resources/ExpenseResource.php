@@ -181,7 +181,7 @@ class ExpenseResource extends Resource
                     ->relationship('expenseCategory', 'expense_category_name'),
                 SelectFilter::make('account_id')
                     ->label('Account')
-                    ->default(fn () => optional(auth()->user())->default_account_id) // Set default account ID
+                    ->default(fn () => optional(auth()->user())->default_account_id) // šo varbūt nevajag, jāskatās kā būs lietojot
                     ->relationship('expenseAccount', 'name', fn(Builder $query) => $query->where('account_owner_id', auth()->id())),
 
                 Filter::make('expense_date')
@@ -191,12 +191,18 @@ class ExpenseResource extends Resource
                         Grid::make(2)
                             ->schema([
                                 DatePicker::make('expenses_from')
-                                    ->default(now()->startOfMonth())
+                                    ->native(false)
                                     ->label('From')
+                                    ->placeholder('YYYY-MM-DD')
+                                    ->displayFormat('Y-m-d')
+                                    ->firstDayOfWeek(1)
                                     ->columnSpan(1),
                                 DatePicker::make('expenses_until')
-                                    ->default(now()->endOfMonth())
+                                    ->native(false)
                                     ->label('Until')
+                                    ->placeholder('YYYY-MM-DD')
+                                    ->displayFormat('Y-m-d')
+                                    ->firstDayOfWeek(1)
                                     ->columnSpan(1),
                             ]),
                     ])

@@ -23,7 +23,7 @@ class ListIncomes extends ListRecords
     {
         return [
             'This Month' => Tab::make()
-            ->modifyQueryUsing(fn(Builder $query) => $query->where('income_date', '>=', now()->subMonth())),
+            ->modifyQueryUsing(fn(Builder $query) => $query->where('income_date', '>=', now()->startOfMonth())),
             'Six Month' => Tab::make()
                 ->modifyQueryUsing(fn(Builder $query) => $query->where('income_date', '>=', now()->subMonth(6))),
             'Year' => Tab::make()
