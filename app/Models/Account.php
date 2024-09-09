@@ -41,4 +41,14 @@ class Account extends Model
             return $this->belongsTo(User::class, 'created_user_id');
         }
 
+    protected static function booted()
+    {
+    // nodrošina, ka autorizētais lietotājs var piekļūt tikai tiem šī modeļa datiem, kur viņš ir created_user_id
+        static::addGlobalScope('account_owner_user', function (Builder $builder) {
+            if (auth()->check()) {
+                $builder->where('account_owner_id', auth()->id());
+            }
+        });
+    }
+
 }
