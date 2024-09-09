@@ -25,4 +25,13 @@ class IncomeCategory extends Model
     {
         return $this->belongsTo(User::class, 'created_user_id');
     }
+    protected static function booted()
+    {
+    // nodrošina, ka autorizētais lietotājs var piekļūt tikai tiem šī modeļa datiem, kur viņš ir created_user_id
+        static::addGlobalScope('income_category_created_user', function (Builder $builder) {
+            if (auth()->check()) {
+                $builder->where('created_user_id', auth()->id());
+            }
+        });
+    }
 }
