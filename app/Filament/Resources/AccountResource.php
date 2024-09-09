@@ -17,6 +17,9 @@ class AccountResource extends Resource
     protected static ?string $model = Account::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'Expenses and Incomes';
+    protected static ?int $navigationSort = 5;
+
     public static function form(Form $form): Form
     {
         // This method can be left empty if you are defining forms separately in the Create and Edit pages

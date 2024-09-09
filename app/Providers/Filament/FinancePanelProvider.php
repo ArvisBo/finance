@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Filament\FontProviders\GoogleFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -28,8 +29,17 @@ class FinancePanelProvider extends PanelProvider
             ->path('finance')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'danger' => Color::Red,
+                'gray' => Color::Slate,
+                'info' => Color::Blue,
+                'primary' => Color::Indigo,
+                'success' => Color::Emerald,
+                'warning' => Color::Orange,
             ])
+            ->font('Noto Sans', provider: GoogleFontProvider::class)
+            ->brandName('Finance') //nosaukuma vietā tiek attēlots Logo
+            ->favicon(asset('images/finance_logo.png'))
+            ->brandLogo(asset('images/finance_logo.png'))->brandLogoHeight('4rem') //links uz logo jānomaina uz vajadzīgo
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([

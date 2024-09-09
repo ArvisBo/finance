@@ -24,7 +24,9 @@ class IncomeCategoryResource extends Resource
 {
     protected static ?string $model = IncomeCategory::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-plus';
+    protected static ?string $navigationGroup = 'Expenses and Incomes';
+    protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
     {

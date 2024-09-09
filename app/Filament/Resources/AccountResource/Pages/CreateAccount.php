@@ -20,6 +20,9 @@ class CreateAccount extends CreateRecord
             Hidden::make('created_user_id')
                 ->default(fn () => auth()->id()),
             Select::make('account_owner_id')
+                ->default(fn () => auth()->id())
+                ->disabled()
+                ->dehydrated()
                 ->options(User::all()->mapWithKeys(function ($user) {
                     return [$user->id => $user->name . ' ' . $user->surname];
                 })),
