@@ -44,13 +44,13 @@ class AccountResource extends Resource
                 TextColumn::make('account_number')
                     ->searchable(),
                 TextColumn::make('accountCreator.name')
-                ->label('Account creator')
-                ->formatStateUsing(function ($record) {
-                    return $record->accountCreator->name . ' ' . $record->accountCreator->surname;
-                })
-                ->sortable()
-                ->searchable()
-                ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Account creator')
+                    ->formatStateUsing(function ($record) {
+                        return $record->accountCreator->name . ' ' . $record->accountCreator->surname;
+                    })
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -70,6 +70,7 @@ class AccountResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\RestoreAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
