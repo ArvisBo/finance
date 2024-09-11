@@ -29,7 +29,7 @@ class AccountResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-        ->query(Account::visible()) // nodrošina, ka tiek rādīti tikai ielogotā lietotāja ieraksti expense modelī methode scopeVisible
+        // ->query(Account::visible()) // nodrošina, ka tiek rādīti tikai ielogotā lietotāja ieraksti expense modelī methode scopeVisible
             ->columns([
                 TextColumn::make('accountOwner.name')
                     ->label('Account owner')
@@ -43,6 +43,14 @@ class AccountResource extends Resource
                     ->searchable(),
                 TextColumn::make('account_number')
                     ->searchable(),
+                TextColumn::make('sharedUsers')
+                    ->label('Shared with')
+                    ->formatStateUsing(function ($record) {
+                        // Nodrošina, lai tiktu parādīts vārds un uzvārds lietotājiem ar ko shared shis konts
+                        return $record->sharedUsers->map(function ($user) {
+                            return $user->name . ' ' . $user->surname;
+                        })->join(', ');
+                    }),
                 TextColumn::make('accountCreator.name')
                     ->label('Account creator')
                     ->formatStateUsing(function ($record) {

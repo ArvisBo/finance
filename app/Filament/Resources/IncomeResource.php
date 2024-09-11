@@ -58,7 +58,7 @@ class IncomeResource extends Resource
                     ->options(Account::selectRaw("CONCAT(name, ' ', account_number) as account_info, id")
                         ->where('account_owner_id', auth()->id())
                         ->pluck('account_info', 'id')
-                        )
+                    )
                     ->searchable()
                     ->required(),
                 DatePicker::make('income_date')
@@ -74,7 +74,6 @@ class IncomeResource extends Resource
                     ->afterStateUpdated(function ($state, callable $set) {
                         // Ja lietotājs ievada "," tas tiks nomainīts uz "."
                         $formattedPrice = str_replace(',', '.', $state);
-
                         // nomaina uz updated formātu
                         $set('amount', $formattedPrice);
                     }),
