@@ -39,24 +39,23 @@ class EditAccount extends EditRecord
             TextInput::make('account_number')
                 ->required()
                 ->maxLength(255)
-                // Nodrošina, ka account_number ir unikāli
+                // Nodrošina, ka account_number ir unikāli (šo iespējams var vienkāršāk realizēt.)
                 ->rule(function ($get) {
                     return Rule::unique(Account::class, 'account_number')->ignore($get('id'));
                 }),
         // Inline form for UserAccountPermission
-        Repeater::make('permissionsAccount')
-        ->relationship('permissionsAccount') // Refers to the hasMany relationship in the Account model
+        Repeater::make('userPermissionsToAccount')
+        ->relationship('userPermissionsToAccount') // Relationship no Account modeļa
         ->schema([
             Select::make('user_id')
                 ->label('Share with user')
-                ->relationship('user', 'name')
-                ->options(User::all()->mapWithKeys(function ($user) {
+                ->options(User::where('id', '!=', auth()->id())->get()->mapWithKeys(function ($user) {
                     return [$user->id => $user->name . ' ' . $user->surname];
                 })),
 
             Select::make('permission_id')
                 ->label('Shared user permission')
-                ->relationship('permission', 'name'),
+                ->relationship('permission', 'name'), // Relationship no UserAccountPermission modeļa
         ])
         ->label('Share account with:')
         ->columns(2),

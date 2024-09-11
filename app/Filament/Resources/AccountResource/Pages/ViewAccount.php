@@ -35,8 +35,8 @@ class ViewAccount extends ViewRecord
                 ->required()
                 ->maxLength(255),
         // Inline form for UserAccountPermission
-            Repeater::make('permissionsAccount')
-            ->relationship('permissionsAccount') // Refers to the hasMany relationship in the Account model
+            Repeater::make('userPermissionsToAccount')
+            ->relationship('userPermissionsToAccount') // Refers to the hasMany relationship in the Account model
             ->schema([
                 Select::make('user_id')
                     ->label('Share with user')

@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -50,14 +52,20 @@ class User extends Authenticatable
     }
 
     // lietotājam ir viens noklusējuma konts
-    public function defaultAccount()
+    public function defaultAccount(): BelongsTo
     {
         return $this->belongsTo(Account::class, 'default_account_id');
     }
 
     // lietotājam var būt vairāki konti
-    public function ownedAccounts()
+    public function ownedAccounts(): HasMany
     {
         return $this->hasMany(Account::class, 'account_owner_id');
+    }
+
+    // lietotāji var veidot vairākus kontus
+    public function createdAccounts(): HasMany
+    {
+        return $this->hasMany(Account::class, 'created_user_id');
     }
 }
