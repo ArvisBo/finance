@@ -26,6 +26,12 @@ class ExpenseCategory extends Model
         return $this->belongsTo(User::class, 'created_user_id');
     }
 
+    // izdevumu kategorijai var būt vairāki izdevumi
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class);
+    }
+
     protected static function booted()
     {
     // nodrošina, ka autorizētais lietotājs var piekļūt tikai tiem šī modeļa datiem, kur viņš ir created_user_id

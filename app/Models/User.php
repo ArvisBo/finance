@@ -49,10 +49,15 @@ class User extends Authenticatable
         ];
     }
 
-    // A user can have a default account
+    // lietotājam ir viens noklusējuma konts
     public function defaultAccount()
     {
         return $this->belongsTo(Account::class, 'default_account_id');
     }
 
+    // lietotājam var būt vairāki konti
+    public function ownedAccounts()
+    {
+        return $this->hasMany(Account::class, 'account_owner_id');
+    }
 }
