@@ -35,7 +35,8 @@ class ViewUser extends ViewRecord
             ->required()
             ->maxLength(255),
         Toggle::make('is_admin')
-            ->required(),
+            ->required()
+            ->visible(fn () => auth()->user()->is_admin),
         Select::make('default_account_id')
             ->options(Account::all()->pluck('name', 'id'))
             ->searchable(),

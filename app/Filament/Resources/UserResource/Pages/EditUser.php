@@ -41,10 +41,15 @@ class EditUser extends EditRecord
             // ->required()
             ->maxLength(255),
         Toggle::make('is_admin')
-            ->required(),
+            ->required()
+            ->visible(fn () => auth()->user()->is_admin),
         Select::make('default_account_id')
-            ->options(Account::all()->pluck('name', 'id'))
-            ->searchable(),
+            ->label('Default account')
+            ->options(Account::selectRaw("CONCAT(name, ' ', account_number) as account_info, id")
+                ->where('account_owner_id', auth()->id())
+                ->pluck('account_info', 'id'))
+            ->searchable()
+            ->preload(),
         ]);
     }
 // šī metode nodrošina, ka ja lauks password ir tukšs tas netiks ņemts vērā saglabājot datus

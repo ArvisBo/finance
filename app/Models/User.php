@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -49,6 +51,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+        // atlasa visus ielogotā lietotāja ierakstus.
+    public function scopeVisible (Builder $query) {
+        if (auth()->user()->is_admin) {
+            return $query;
+        } else {
+            return $query->where('id', auth()->id());
+        }
     }
 
     // lietotājam ir viens noklusējuma konts

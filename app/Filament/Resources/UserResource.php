@@ -33,6 +33,7 @@ class UserResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+        ->query(User::visible())
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
@@ -44,7 +45,8 @@ class UserResource extends Resource
                     ->dateTime()
                     ->sortable(),
                 Tables\Columns\IconColumn::make('is_admin')
-                    ->boolean(),
+                    ->boolean()
+                    ->visible(fn () => auth()->user()->is_admin),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
