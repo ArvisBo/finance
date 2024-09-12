@@ -20,9 +20,9 @@ class Income extends Model
     ];
 
     // atlasa visus ielogotā lietotāja ierakstus.
-    public function scopeVisible (Builder $query) {
-        $query->where('created_user_id', auth()->id());
-    }
+    // public function scopeVisible (Builder $query) {
+    //     $query->where('created_user_id', auth()->id());
+    // }
 
     public function incomeCreator()
     {
@@ -41,10 +41,20 @@ class Income extends Model
 
     protected static function booted()
     {
-    // nodrošina, ka autorizētais lietotājs var piekļūt tikai tiem šī modeļa datiem, kur viņš ir created_user_id
-        static::addGlobalScope('income_created_user', function (Builder $builder) {
+        static::addGlobalScope('income_access', function (Builder $builder) {
             if (auth()->check()) {
-                $builder->where('created_user_id', auth()->id());
+                $builder->where(function ($query) {
+                    $query->whereIn('account_id', function ($subQuery) {
+                        $subQuery->select('id')
+                            ->from('accounts')
+                            ->where('account_owner_id', auth()->id());
+                    })
+                    ->orWhereIn('account_id', function ($subQuery) {
+                        $subQuery->select('account_id')
+                            ->from('user_account_permissions')
+                            ->where('user_id', auth()->id());
+                    });
+                });
             }
         });
     }

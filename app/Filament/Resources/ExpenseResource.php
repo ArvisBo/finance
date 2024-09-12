@@ -52,7 +52,20 @@ class ExpenseResource extends Resource
                     ->default(fn () => optional(auth()->user())->default_account_id)
                     ->options(Account::selectRaw("CONCAT(name, ' ', account_number) as account_info, id")
                         ->where('account_owner_id', auth()->id())
+                        // Rāda arī shared kontus formā
+                        // ->orWhereHas('userPermissionsToAccount', function ($query) {
+                        //     $query->where('user_id', auth()->id());
+                        // })
                         ->pluck('account_info', 'id'))
+
+                    // šis nodrošina, ka expense create  formā var izvēlēties shared account un pie tiek rādīti kontu owneri, lai atšķirtu savus un shared kontus. (pagaidām neizmantju)
+                    // ->options(Account::selectRaw("CONCAT(accounts.name, ' ', accounts.account_number, ' (Owner: ', owners.name, ' ', owners.surname, ')') as account_info, accounts.id")
+                    //     ->leftJoin('users as owners', 'accounts.account_owner_id', '=', 'owners.id')
+                    //         ->where('accounts.account_owner_id', auth()->id())
+                    //             ->orWhereHas('userPermissionsToAccount', function ($query) {
+                    //                 $query->where('user_id', auth()->id());
+                    //         })
+                    //     ->pluck('account_info', 'accounts.id'))
                     ->searchable()
                     ->required(),
                 Select::make('expense_category_id')
@@ -120,10 +133,10 @@ class ExpenseResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->query(Expense::visible()) // nodrošina, ka tiek rādīti tikai ielogotā lietotāja ieraksti expense modelī methode scopeVisible
+            // ->query(Expense::visible()) // nodrošina, ka tiek rādīti tikai ielogotā lietotāja ieraksti expense modelī methode scopeVisible
             ->columns([
                 TextColumn::make('expenseCreator.name')
-                ->label('Name')
+                ->label('Expense author')
                 ->formatStateUsing(function ($record) {
                     return $record->expenseCreator->name . ' ' . $record->expenseCreator->surname;
                 })
@@ -184,7 +197,8 @@ class ExpenseResource extends Resource
                 SelectFilter::make('account_id')
                     ->label('Account')
                     ->default(fn () => optional(auth()->user())->default_account_id) // šo varbūt nevajag, jāskatās kā būs lietojot
-                    ->relationship('expenseAccount', 'name', fn(Builder $query) => $query->where('account_owner_id', auth()->id())),
+                    ->relationship('expenseAccount', 'name'),
+                    // ->relationship('expenseAccount', 'name', fn(Builder $query) => $query->where('account_owner_id', auth()->id())),
 
                 Filter::make('expense_date')
                     ->label('Date Range')

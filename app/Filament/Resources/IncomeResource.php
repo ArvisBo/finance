@@ -85,10 +85,10 @@ class IncomeResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->query(Income::visible()) // nodrošina, ka tiek rādīti tikai ielogotā lietotāja ieraksti expense modelī methode scopeVisible
+            // ->query(Income::visible()) // nodrošina, ka tiek rādīti tikai ielogotā lietotāja ieraksti expense modelī methode scopeVisible
             ->columns([
                 TextColumn::make('incomeCreator.name')
-                ->label('Name')
+                ->label('Income author')
                 ->formatStateUsing(function ($record) {
                     return $record->incomeCreator->name . ' ' . $record->incomeCreator->surname;
                 })
@@ -131,7 +131,8 @@ class IncomeResource extends Resource
                 SelectFilter::make('account_id')
                     ->label('Account')
                     ->default(fn () => optional(auth()->user())->default_account_id) // šo varbūt nevajag, jāskatās kā būs lietojot
-                    ->relationship('incomeAccount', 'name', fn(Builder $query)=>$query->where('account_owner_id', auth()->id())),
+                    ->relationship('incomeAccount', 'name'),
+                    // ->relationship('incomeAccount', 'name', fn(Builder $query)=>$query->where('account_owner_id', auth()->id())),
 
                 Filter::make('expense_date')
                     ->label('Date Range')

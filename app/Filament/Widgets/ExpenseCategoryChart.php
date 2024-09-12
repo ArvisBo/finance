@@ -2,9 +2,8 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Expense;
 use Filament\Widgets\ChartWidget;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class ExpenseCategoryChart extends ChartWidget
 {
@@ -12,39 +11,51 @@ class ExpenseCategoryChart extends ChartWidget
 
     protected function getData(): array
     {
-        // atlas sākuma un beigu datumu grafikiem
-        $startDate = Carbon::now()->startOfMonth();
-        $endDate = Carbon::now()->endOfMonth();
+        $expenses = Expense::whereMonth('expense_date', now()->month) // Get expenses for the current month
+            ->whereHas('expenseAccount', function ($query) {
+                // Filter expenses where the account owner is the authenticated user
+                $query->where('account_owner_id', auth()->id());
+            })
+            ->with('expenseCategory') // Load the related expense category
+            ->selectRaw('expense_category_id, SUM(total_price) as total')
+            ->groupBy('expense_category_id')
+            ->get();
 
-        // atlasa visus izdevumu konkrētajai kategorijai tekošajā mēnesī
-        $expensesByCategory = DB::table('expenses')
-            ->join('expense_categories', 'expenses.expense_category_id', '=', 'expense_categories.id')
-            ->select('expense_categories.expense_category_name as category', DB::raw('SUM(expenses.total_price) as total'))
-            ->whereBetween('expenses.expense_date', [$startDate, $endDate])
-            ->groupBy('expense_categories.expense_category_name')
-            ->orderBy('total', 'desc')
-            ->pluck('total', 'category');
+        if ($expenses->isEmpty()) {
+            return [
+                'labels' => ['No Data'],
+                'datasets' => [
+                    [
+                        'label' => 'Expenses',
+                        'data' => [0],
+                        'backgroundColor' => ['rgba(54, 162, 235, 0.2)'],
+                        'borderColor' => ['rgba(54, 162, 235, 1)'],
+                        'borderWidth' => 1,
+                    ],
+                ],
+            ];
+        }
 
-        // sagatavo datu grafikam
-        $categories = $expensesByCategory->keys()->toArray();
-        $totals = $expensesByCategory->values()->toArray();
+        // Extract category names and totals for the chart
+        $labels = $expenses->map(fn ($expense) => $expense->expenseCategory->expense_category_name ?? 'Unknown Category')->toArray();
+        $totals = $expenses->pluck('total')->toArray();
 
         return [
+            'labels' => $labels,
             'datasets' => [
                 [
-                    'label' => 'Total Expenses by Category',
+                    'label' => 'Expenses',
                     'data' => $totals,
-                    'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
-                    'borderColor' => 'rgba(75, 192, 192, 1)',
+                    'backgroundColor' => 'rgba(54, 162, 235, 0.2)',
+                    'borderColor' => 'rgba(54, 162, 235, 1)',
                     'borderWidth' => 1,
                 ],
             ],
-            'labels' => $categories,
         ];
     }
 
     protected function getType(): string
     {
-        return 'bar'; 
+        return 'bar';
     }
 }

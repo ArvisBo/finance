@@ -79,4 +79,16 @@ class User extends Authenticatable
     {
         return $this->hasMany(Account::class, 'created_user_id');
     }
+
+    // lietotājam var būt vairākas izdevumu categorijas
+    public function createdExpenseCategory(): HasMany
+    {
+        return $this->hasMany(ExpenseCategory::class, 'created_user_id');
+    }
+
+    // lietotājam var būt vairākas ienākumu categorijas
+    public function createdIncomeCategory(): HasMany
+    {
+        return $this->hasMany(IncomeCategory::class, 'created_user_id');
+    }
 }
