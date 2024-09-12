@@ -9,15 +9,17 @@ class ExpenseCategoryChart extends ChartWidget
 {
     protected static ?string $heading = 'Expenses by Category for the Month';
 
+    protected static ?int $sort = 2;
+
     protected function getData(): array
     {
-        $expenses = Expense::whereMonth('expense_date', now()->month) // Get expenses for the current month
+        $expenses = Expense::whereMonth('expense_date', now()->month) // Atlasa tekošā mēneša izdevumus
             ->whereHas('expenseAccount', function ($query) {
-                // Filter expenses where the account owner is the authenticated user
+                // atlasa tikai tos izdevumus, kur konta owner ir autorizētais lietotājs
                 $query->where('account_owner_id', auth()->id());
             })
-            ->with('expenseCategory') // Load the related expense category
-            ->selectRaw('expense_category_id, SUM(total_price) as total')
+            ->with('expenseCategory') // ielādē izdevumu categorijas
+            ->selectRaw('expense_category_id, SUM(total_price) as total') // sasummē visus kategorijas izdevumus
             ->groupBy('expense_category_id')
             ->get();
 
@@ -26,7 +28,7 @@ class ExpenseCategoryChart extends ChartWidget
                 'labels' => ['No Data'],
                 'datasets' => [
                     [
-                        'label' => 'Expenses',
+                        'label' => 'Expenses by category',
                         'data' => [0],
                         'backgroundColor' => ['rgba(54, 162, 235, 0.2)'],
                         'borderColor' => ['rgba(54, 162, 235, 1)'],
@@ -36,7 +38,6 @@ class ExpenseCategoryChart extends ChartWidget
             ];
         }
 
-        // Extract category names and totals for the chart
         $labels = $expenses->map(fn ($expense) => $expense->expenseCategory->expense_category_name ?? 'Unknown Category')->toArray();
         $totals = $expenses->pluck('total')->toArray();
 
@@ -44,7 +45,7 @@ class ExpenseCategoryChart extends ChartWidget
             'labels' => $labels,
             'datasets' => [
                 [
-                    'label' => 'Expenses',
+                    'label' => 'Expenses by category',
                     'data' => $totals,
                     'backgroundColor' => 'rgba(54, 162, 235, 0.2)',
                     'borderColor' => 'rgba(54, 162, 235, 1)',

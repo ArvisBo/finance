@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Expense;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -10,43 +11,35 @@ class ExpenseChart extends ChartWidget
 {
     protected static ?string $heading = 'Expenses for the Month';
 
+    protected static ?int $sort = 2;
+
     protected function getData(): array
     {
-        // atlas sākuma un beigu datumu grafikiem
-        $startDate = Carbon::now()->startOfMonth();
-        $endDate = Carbon::now()->endOfMonth();
+        $expenses = Expense::whereMonth('expense_date', now()->month) // Atlasa tekošā mēneša izdevumus
+            ->whereHas('expenseAccount', function ($query) {
+                // atlasa tikai tos izdevumus, kur konta owner ir autorizētais lietotājs
+                $query->where('account_owner_id', auth()->id());
+            })
+            ->selectRaw('DAY(expense_date) as day, SUM(total_price) as total') //sasumē visus dienas izdevumus
+            ->groupBy('day')
+            ->orderBy('day')
+            ->get();
 
-        // atlasa kopējos izdevumu dienā tekošajam mēnesim
-        $expenses = DB::table('expenses')
-            ->select(DB::raw('DATE(expense_date) as date'), DB::raw('SUM(total_price) as total'))
-            ->whereBetween('expense_date', [$startDate, $endDate])
-            ->groupBy('date')
-            ->orderBy('date')
-            ->pluck('total', 'date');
-
-        // sagatavo datu grafikam
-        $dates = [];
-        $totals = [];
-
-        $currentDate = $startDate->copy();
-        while ($currentDate->lte($endDate)) {
-            $formattedDate = $currentDate->format('Y-m-d');
-            $dates[] = $formattedDate;
-            $totals[] = $expenses->get($formattedDate, 0); // jau kādā dienā nav izdevumu, tad uzstāda tai dienai 0
-            $currentDate->addDay();
-        }
+        $days = $expenses->pluck('day')->toArray();
+        $totals = $expenses->pluck('total')->toArray();
 
         return [
+            'labels' => $days,
             'datasets' => [
                 [
-                    'label' => 'Daily Expenses',
+                    'label' => 'Total Expenses in days',
                     'data' => $totals,
                     'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
                     'borderColor' => 'rgba(75, 192, 192, 1)',
-                    'borderWidth' => 1,
+                    'fill' => false,
+                    'borderWidth' => 2,
                 ],
             ],
-            'labels' => $dates,
         ];
     }
 

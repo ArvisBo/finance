@@ -2,6 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Widgets\ExpenseCategoryChart;
+use App\Filament\Widgets\ExpenseChart;
+use App\Filament\Widgets\StatsOverviewWidget;
 use Filament\FontProviders\GoogleFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -47,8 +50,9 @@ class FinancePanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                StatsOverviewWidget::class,
+                ExpenseCategoryChart::class,
+                ExpenseChart::class,
             ])
             ->middleware([
                 EncryptCookies::class,
