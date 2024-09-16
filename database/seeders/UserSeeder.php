@@ -21,9 +21,27 @@ class UserSeeder extends Seeder
         ]);
 
         User::create([
-            'name' => 'Kinitja',
+            'name' => 'Kintija',
             'surname' => 'Kintija',
             'email' => 'kintija@local.com',
+            'password' => Hash::make('Parole123!'),
+            'is_admin' => false,
+            'default_account_id' => null,
+        ]);
+
+        User::create([
+            'name' => 'Test',
+            'surname' => 'Admin',
+            'email' => 'test_admin@local.local',
+            'password' => Hash::make('Parole123!'),
+            'is_admin' => true,
+            'default_account_id' => null,
+        ]);
+
+        User::create([
+            'name' => 'Test',
+            'surname' => 'User',
+            'email' => 'test_user@local.local',
             'password' => Hash::make('Parole123!'),
             'is_admin' => false,
             'default_account_id' => null,

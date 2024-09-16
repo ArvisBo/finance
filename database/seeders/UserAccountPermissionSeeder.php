@@ -11,15 +11,9 @@ class UserAccountPermissionSeeder extends Seeder
     public function run()
     {
         UserAccountPermission::create([
-            'user_id' => 1,
-            'account_id' => 1,
+            'user_id' => 4,
+            'account_id' => 5,
             'permission_id' => 1,
-        ]);
-
-        UserAccountPermission::create([
-            'user_id' => 2,
-            'account_id' => 2,
-            'permission_id' => 2,
         ]);
     }
 }
