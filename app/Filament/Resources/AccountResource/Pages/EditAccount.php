@@ -42,21 +42,20 @@ class EditAccount extends EditRecord
                 ->unique(ignoreRecord: true),
         // Inline form for UserAccountPermission
         Repeater::make('userPermissionsToAccount')
-        ->relationship('userPermissionsToAccount') // Relationship no Account modeļa
-        ->schema([
-            Select::make('user_id')
-                ->label('Share with user')
-                //jānomaina, lai nevar uzstādīt to pašu lietotāju, kas ir konta owners
-                ->options(User::where('id', '!=', $this->record->account_owner_id)->get()->mapWithKeys(function ($user) {
-                    return [$user->id => $user->name . ' ' . $user->surname];
-                })),
-
-            Select::make('permission_id')
-                ->label('Shared user permission')
-                ->relationship('permission', 'name'), // Relationship no UserAccountPermission modeļa
-        ])
-        ->label('Share account with:')
-        ->columns(2),
+            ->relationship('userPermissionsToAccount') // Relationship no Account modeļa
+            ->schema([
+                Select::make('user_id')
+                    ->label('Share with user')
+                    //Neļauj izvēlēties to pašu lietotāju, kas ir konta owneris
+                    ->options(User::where('id', '!=', $this->record->account_owner_id)->get()->mapWithKeys(function ($user) {
+                        return [$user->id => $user->name . ' ' . $user->surname];
+                    })),
+                Select::make('permission_id')
+                    ->label('Shared user permission')
+                    ->relationship('permission', 'name'), // Relationship no UserAccountPermission modeļa
+            ])
+            ->label('Share account with:')
+            ->columns(2),
     ]);
 
     }
