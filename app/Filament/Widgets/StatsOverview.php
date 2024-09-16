@@ -5,11 +5,11 @@ namespace App\Filament\Widgets;
 use App\Models\Expense;
 use App\Models\Income;
 use Carbon\Carbon;
-use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Card;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
-class StatsOverviewWidget extends BaseWidget
+class StatsOverview extends StatsOverviewWidget
 {
     protected function getCards(): array
     {
